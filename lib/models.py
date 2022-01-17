@@ -243,3 +243,36 @@ def res_classificator(n_class, img_rows=512, img_cols=512):
     model = Model(inputs=img_input, outputs=x)
     return model
     
+def vers1_classificator(n_class, img_rows=512, img_cols=512):
+
+    nb_filter = [32,64,128,256,512,512]
+    nb_filter_deep = [32,32]
+    bn_axis = 3
+    # Handle Dimension Ordering for different backends
+    img_input = Input(shape=(img_rows, img_cols, 3), name='main_input')
+    
+    conv0_1 = residual_block(img_input, nb_filter=nb_filter_deep[0], name='conv0_1')
+    pool0 = MaxPooling2D((2, 2), strides=(2, 2), name='pool0')(conv0_1) # mein Conv2D
+
+    conv1_1 = residual_block(pool0, nb_filter=nb_filter[1], name='conv1_1')
+    pool1 = MaxPooling2D((2, 2), strides=(2, 2), name='pool1')(conv1_1) # mein Conv2D
+    
+    ########################################################################################################
+    conv2_1 = residual_block(pool1, nb_filter=nb_filter[2], name='conv2_1')
+    pool2 = MaxPooling2D((2, 2), strides=(2, 2), name='pool2')(conv2_1)
+
+#############################################################################################################################
+    conv3_1 = residual_block(pool2, nb_filter=nb_filter[3], name='conv3_1')
+    pool3 = MaxPooling2D((2, 2), strides=(2, 2), name='pool3')(conv3_1)
+
+    conv4_1 = residual_block(pool3, nb_filter=nb_filter[4], name='conv4_1')
+    pool4 = MaxPooling2D((2, 2), strides=(2, 2), name='pool4')(conv4_1)
+
+    conv5_1 = residual_block(pool4, nb_filter=nb_filter[5], name='conv5_1')
+
+    x = GlobalAveragePooling2D()(conv5_1)
+    x = Flatten()(x)
+    x = Dense(n_class, activation='softmax', name='output', kernel_initializer='he_normal')(x) #multi-class
+
+    model = Model(inputs=img_input, outputs=x)
+    return model
